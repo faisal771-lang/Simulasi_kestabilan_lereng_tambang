@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator Stabilitas Lereng Tambang - Geologi Teknik (Fase F / Kelas XII)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Ikon Teknik & Tambang -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#080c14',
+                        },
+                        amber: {
+                            450: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styling untuk Nuansa Geologi Teknik & Kontrol Presisi */
+        body {
+            background-color: #080c14;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #f59e0b;
+            border: 2px solid #0f172a;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #fbbf24;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 999px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        /* Animasi Pulse Sirine */
+        @keyframes sirenPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .siren-active {
+            animation: sirenPulse 1.2s infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- ==================== LAYAR AWAL (INTRO MODAL) ==================== -->
+    <div id="introModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md p-4 overflow-y-auto">
+        <div class="max-w-3xl w-full bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden my-auto">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-amber-600/20 via-slate-800 to-slate-900 border-b border-slate-700/80 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold uppercase tracking-wider rounded-full">
+                        Geologi Teknik • Fase F (Kelas XII)
+                    </span>
+                    <span class="px-3 py-1 bg-sky-500/20 border border-sky-500/40 text-sky-400 text-xs font-bold uppercase tracking-wider rounded-full">
+                        Simulator Interaktif
+                    </span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                    Simulator Stabilitas Lereng Tambang Terbuka
+                </h1>
+                <p class="text-slate-300 mt-2 text-sm sm:text-base">
+                    Analisis mekanisme keruntuhan lereng (<em>slope failure</em>), dinamika air pori, serta perancangan rekayasa geoteknik pada pit pertambangan.
+                </p>
+            </div>
+
+            <!-- Konten Materi Ringkas -->
+            <div class="p-6 sm:p-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800/60 border border-slate-700/60 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 text-amber-400 font-bold mb-2">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                            <h3>Konsep Faktor Keamanan (FoS)</h3>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Stabilitas lereng ditentukan oleh rasio antara <strong>Gaya Penahan</strong> (kuat geser batuan/kohesi) dengan <strong>Gaya Penggerak</strong> (berat massa batuan, air, dan getaran):
+                        </p>
+                        <div class="mt-3 p-2.5 bg-slate-950 rounded-lg border border-slate-800 font-mono text-center text-xs sm:text-sm text-amber-300">
+                            FoS = Σ Gaya Penahan / Σ Gaya Penggerak
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/60 border border-slate-700/60 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 text-sky-400 font-bold mb-2">
+                            <i class="fa-solid fa-bullseye"></i>
+                            <h3>Tujuan Pembelajaran</h3>
+                        </div>
+                        <ul class="text-xs sm:text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+                            <li>Menganalisis pengaruh sudut lereng, litologi, dan curah hujan terhadap stabilitas.</li>
+                            <li>Mengamati tahapan proses terjadinya longsor (retakan tarik hingga keruntuhan).</li>
+                            <li>Menerapkan rekayasa mitigasi (<em>drainase, rock bolt, terasering</em>).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Klasifikasi Status FoS -->
+                <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+                    <div class="bg-emerald-950/50 border border-emerald-500/40 p-3 rounded-xl">
+                        <div class="text-emerald-400 font-mono font-bold text-sm sm:text-base">FoS &gt; 1.5</div>
+                        <div class="text-xs font-semibold text-emerald-300 mt-0.5">AMAN (Stabil)</div>
+                    </div>
+                    <div class="bg-amber-950/50 border border-amber-500/40 p-3 rounded-xl">
+                        <div class="text-amber-400 font-mono font-bold text-sm sm:text-base">1.0 - 1.5</div>
+                        <div class="text-xs font-semibold text-amber-300 mt-0.5">WASPADA (Kritis)</div>
+                    </div>
+                    <div class="bg-rose-950/50 border border-rose-500/40 p-3 rounded-xl">
+                        <div class="text-rose-400 font-mono font-bold text-sm sm:text-base">FoS &lt; 1.0</div>
+                        <div class="text-xs font-semibold text-rose-300 mt-0.5">LONGSOR (Runtuh)</div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-800">
+                    <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-300 hover:text-white">
+                        <input type="checkbox" id="introAudioCheck" checked class="w-4 h-4 accent-amber-500 rounded">
+                        <span><i class="fa-solid fa-volume-high text-amber-400 mr-1"></i> Aktifkan Musik Latar & Efek Suara Geoteknik</span>
+                    </label>
+                    <button id="startSimBtn" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-amber-500/25 transition transform hover:scale-105 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Mulai Simulasi Laboratorium
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HEADER UTAMA (NAVBAR) ==================== -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-lg">
+                    <i class="fa-solid fa-hill-rockslide"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm sm:text-base md:text-lg text-white leading-tight">
+                        Simulator Stabilitas Lereng Tambang
+                    </h1>
+                    <p class="text-[11px] sm:text-xs text-slate-400">Geologi Teknik • Kelas XII Fase F</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector & Controls -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Mode Tabs -->
+                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
+                    <button id="modeFreeBtn" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition">
+                        <i class="fa-solid fa-sliders mr-1"></i> Eksplorasi Bebas
+                    </button>
+                    <button id="modeCaseBtn" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-clipboard-check mr-1"></i> Studi Kasus & Kuis
+                    </button>
+                </div>
+
+                <!-- Audio Toggle -->
+                <button id="audioToggleBtn" title="Toggle Musik & Efek Suara" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i id="audioIcon" class="fa-solid fa-volume-high"></i>
+                    <span class="hidden md:inline">Audio ON</span>
+                </button>
+
+                <!-- Reset Button -->
+                <button id="resetBtn" title="Reset Parameter & Pulihkan Lereng" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/50 border border-slate-700 hover:border-rose-500/50 text-slate-200 hover:text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Reset Lereng</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== BANNER STUDI KASUS (OPSIONAL SAAT MODE KASUS AKTIF) ==================== -->
+    <div id="caseStudyBanner" class="hidden bg-indigo-950/80 border-b border-indigo-500/40 px-4 py-3">
+        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+            <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 bg-indigo-500 text-white text-[10px] font-bold uppercase rounded">Misi Evaluasi Geoteknik</span>
+                    <select id="caseSelector" class="bg-slate-900 border border-indigo-400/50 text-white text-xs font-semibold rounded-lg px-2.5 py-1 focus:outline-none">
+                        <option value="0">Kasus 1: Musim Hujan Ekstrem di Tambang Batubara</option>
+                        <option value="1">Kasus 2: Efek Peledakan (Blasting) Dekat Lereng Curam</option>
+                        <option value="2">Kasus 3: Optimalisasi Lereng Batuan Lapuk & Anggaran</option>
+                    </select>
+                </div>
+                <p id="caseDescription" class="text-xs sm:text-sm text-indigo-100">
+                    Deskripsi kasus akan muncul di sini...
+                </p>
+            </div>
+            <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                <div class="text-right">
+                    <div class="text-[10px] text-indigo-300 uppercase">Target Stabilitas</div>
+                    <div id="caseTargetBadge" class="font-mono font-bold text-xs sm:text-sm text-emerald-400">FoS ≥ 1.50 (AMAN)</div>
+                </div>
+                <button id="openQuizBtn" disabled class="px-4 py-2 rounded-xl bg-slate-700 text-slate-400 font-bold text-xs flex items-center gap-2 transition cursor-not-allowed">
+                    <i class="fa-solid fa-lock" id="quizLockIcon"></i>
+                    <span>Lanjut Kuis Evaluasi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== KONTEN UTAMA SIMULATOR ==================== -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- KOLOM KIRI & TENGAH: CANVAS SIMULASI + INDIKATOR & LOG (8 Kolom di Desktop) -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+            
+            <!-- 1. VIEWPORT CANVAS SIMULASI LERENG TAMBANG -->
+            <div class="relative bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-xl flex flex-col">
+                <!-- Overlay Status Bar di Atas Canvas -->
+                <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-slate-950/90 rounded-xl mb-2 border border-slate-800/80">
+                    <div class="flex items-center gap-3">
+                        <div id="statusBadge" class="px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-extrabold text-xs sm:text-sm flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="statusText">AMAN (STABIL)</span>
+                        </div>
+                        <div class="text-xs text-slate-400 hidden sm:block">
+                            Bidang Gelincir: <span id="slipPlaneType" class="text-slate-200 font-semibold">Busur / Komposit</span>
+                        </div>
+                    </div>
+
+                    <!-- Legenda Visual Singkat -->
+                    <div class="flex items-center gap-3 text-[11px] text-slate-300">
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span> Muka Air Tanah</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 border-t-2 border-dashed border-rose-500 inline-block"></span> Bidang Gelincir</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-truck-monster text-amber-400"></i> Dump Truck (Skala)</span>
+                    </div>
+                </div>
+
+                <!-- Container Canvas Responsif -->
+                <div id="canvasContainer" class="relative w-full h-[320px] sm:h-[400px] md:h-[440px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+                    <canvas id="slopeCanvas"></canvas>
+                    
+                    <!-- Tombol Pulihkan Cepat jika Terjadi Longsor -->
+                    <div id="collapseOverlay" class="hidden absolute inset-0 bg-rose-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
+                        <div class="bg-slate-900/95 border-2 border-rose-500 p-5 rounded-2xl max-w-md shadow-2xl">
+                            <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center text-2xl mx-auto mb-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-rose-400">KERUNTUHAN LERENG (SLOPE FAILURE)!</h3>
+                            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                                Gaya penggerak telah melampaui kuat geser batuan (<strong>FoS &lt; 1.0</strong>). Massa batuan meluncur menimbun lantai tambang (<em>pit floor</em>).
+                            </p>
+                            <button id="recoverSlopeBtn" class="mt-4 w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition">
+                                <i class="fa-solid fa-hammer mr-1"></i> Rekonstruksi & Pulihkan Lereng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DASHBOARD ANALISIS: GAUGE FoS, GAYA PENAHAN VS PENGGERAK, & LOG PROSES -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                
+                <!-- Meteran FoS & Perbandingan Gaya (5 Kolom) -->
+                <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                            <span><i class="fa-solid fa-gauge-high text-amber-400 mr-1.5"></i> Faktor Keamanan (FoS)</span>
+                            <span class="font-mono text-[11px] text-slate-500">Min: 1.50</span>
+                        </h2>
+
+                        <!-- Nilai FoS Besar -->
+                        <div class="flex items-baseline justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3">
+                            <div>
+                                <div class="text-[11px] text-slate-400">Nilai FoS Aktual</div>
+                                <div id="fosValueDisplay" class="font-mono text-3xl font-extrabold text-emerald-400">1.85</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[11px] text-slate-400">Probabilitas Longsor</div>
+                                <div id="failureProbDisplay" class="font-mono text-sm font-bold text-slate-200">&lt; 5% (Rendah)</div>
+                            </div>
+                        </div>
+
+                        <!-- Bar Visual FoS -->
+                        <div class="mb-4">
+                            <div class="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex relative">
+                                <div class="w-[33.3%] bg-rose-500/80 h-full" title="Longsor (<1.0)"></div>
+                                <div class="w-[16.7%] bg-amber-500/80 h-full" title="Waspada (1.0 - 1.5)"></div>
+                                <div class="w-[50%] bg-emerald-500/80 h-full" title="Aman (>1.5)"></div>
+                                <!-- Jarum Penunjuk -->
+                                <div id="fosMarker" class="absolute top-0 bottom-0 w-1.5 bg-white shadow-[0_0_8px_#fff] transition-all duration-300" style="left: 60%;"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+                                <span>0.0</span>
+                                <span>1.0 (Kritis)</span>
+                                <span>1.5 (Aman)</span>
+                                <span>3.0+</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafik Batang Perbandingan Gaya -->
+                    <div class="space-y-2.5 pt-3 border-t border-slate-800">
+                        <div class="text-xs font-bold text-slate-300">Kesetimbangan Gaya Lereng</div>
+                        
+                        <!-- Gaya Penahan -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-emerald-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i>Gaya Penahan (Resisting)</span>
+                                <span id="resistingForceText" class="font-mono font-bold text-emerald-300">4,250 kN</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div id="resistingBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 75%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gaya Penggerak -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-rose-400 font-medium"><i class="fa-solid fa-arrow-trend-down mr-1"></i>Gaya Penggerak (Driving)</span>
+                                <span id="drivingForceText" class="font-mono font-bold text-rose-300">2,300 kN</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div id="drivingBar" class="h-full bg-rose-500 rounded-full transition-all duration-300" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Proses Terjadinya Longsor (7 Kolom) -->
+                <div class="md:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-microscope text-sky-400 mr-1.5"></i> Analisis Proses Geologi Teknik</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">Real-Time</span>
+                    </h2>
+
+                    <!-- 4 Tahapan Mekanisme Longsor -->
+                    <div id="geologyStages" class="space-y-2 flex-1 overflow-y-auto pr-1">
+                        <!-- Tahap 1 -->
+                        <div id="stage1Card" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-sky-400">1. Infiltrasi & Tekanan Air Pori (Pore Pressure)</span>
+                                <span id="stage1Badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Normal</span>
+                            </div>
+                            <p id="stage1Desc" class="text-[11px] text-slate-400 mt-1">
+                                Muka air tanah rendah; tegangan efektif antar butir batuan masih terjaga optimal.
+                            </p>
+                        </div>
+
+                        <!-- Tahap 2 -->
+                        <div id="stage2Card" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-amber-400">2. Pembentukan Retakan Tarik (Tension Crack)</span>
+                                <span id="stage2Badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Tidak Ada</span>
+                            </div>
+                            <p id="stage2Desc" class="text-[11px] text-slate-400 mt-1">
+                                Tegangan tarik di puncak lereng (crest) masih di bawah kuat tarik massa batuan.
+                            </p>
+                        </div>
+
+                        <!-- Tahap 3 -->
+                        <div id="stage3Card" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-orange-400">3. Degradasi Kuat Geser & Rayapan (Creep)</span>
+                                <span id="stage3Badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Stabil</span>
+                            </div>
+                            <p id="stage3Desc" class="text-[11px] text-slate-400 mt-1">
+                                Kohesi (c) dan sudut geser dalam (φ) mampu menahan komponen berat massa lereng.
+                            </p>
+                        </div>
+
+                        <!-- Tahap 4 -->
+                        <div id="stage4Card" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-rose-400">4. Keruntuhan & Pergerakan Massa (Failure)</span>
+                                <span id="stage4Badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Terkendali</span>
+                            </div>
+                            <p id="stage4Desc" class="text-[11px] text-slate-400 mt-1">
+                                Tidak ada pergerakan massa batuan sepanjang bidang gelincir.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: PANEL KONTROL PARAMETER GEOLOGI & MITIGASI (4 Kolom di Desktop) -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            
+            <!-- PANEL 1: PARAMETER GEOLOGI & KONDISI ALAM -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-amber-400"></i>
+                        Parameter Geologi & Lingkungan
+                    </h2>
+                    <span class="text-[11px] text-slate-400">Input Variabel</span>
+                </div>
+
+                <!-- 1. Jenis Litologi / Kekuatan Batuan -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Jenis Litologi Penyusun Lereng
+                    </label>
+                    <select id="lithologySelect" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs sm:text-sm rounded-xl p-2.5 focus:border-amber-500 focus:outline-none">
+                        <option value="claystone">Batulempung Lapuk (Lunak - Kohesi Rendah)</option>
+                        <option value="sandstone" selected>Batupasir Sedang (Kohesi Menengah)</option>
+                        <option value="andesite">Andesit Segar (Kuat - Kohesi Tinggi)</option>
+                    </select>
+                    <div id="lithologyProps" class="flex justify-between text-[11px] font-mono text-slate-400 mt-1.5 px-1">
+                        <span>Kohesi (c): 45 kPa</span>
+                        <span>Sudut Geser (φ): 30°</span>
+                    </div>
+                </div>
+
+                <!-- 2. Sudut Kemiringan Lereng -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="slopeAngleSlider" class="text-xs font-semibold text-slate-300">
+                            Sudut Kemiringan Lereng (α)
+                        </label>
+                        <span id="slopeAngleVal" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">45°</span>
+                    </div>
+                    <input type="range" id="slopeAngleSlider" min="20" max="75" value="45" step="1">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
+                        <span>20° (Landai)</span>
+                        <span>45° (Sedang)</span>
+                        <span>75° (Sangat Curam)</span>
+                    </div>
+                </div>
+
+                <!-- 3. Intensitas Curah Hujan & Air Pori -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="rainfallSlider" class="text-xs font-semibold text-slate-300">
+                            <i class="fa-solid fa-cloud-rain text-sky-400 mr-1"></i> Curah Hujan & Tekanan Air Pori
+                        </label>
+                        <span id="rainfallVal" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300">20%</span>
+                    </div>
+                    <input type="range" id="rainfallSlider" min="0" max="100" value="20" step="5">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
+                        <span>0% (Kering)</span>
+                        <span>50% (Hujan Sedang)</span>
+                        <span>100% (Badai Ekstrem)</span>
+                    </div>
+                </div>
+
+                <!-- 4. Getaran Peledakan (Blasting Vibration) -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="text-xs font-semibold text-slate-300">
+                            <i class="fa-solid fa-explosion text-orange-400 mr-1"></i> Getaran Peledakan (Blasting)
+                        </label>
+                        <span id="blastingVal" class="font-mono text-xs font-bold text-orange-300">Rendah (0.05g)</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" data-blast="0" class="blast-btn py-2 px-2 rounded-xl text-xs font-bold border border-amber-500 bg-amber-500/20 text-amber-300 transition">
+                            Rendah
+                        </button>
+                        <button type="button" data-blast="1" class="blast-btn py-2 px-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-950 text-slate-400 hover:text-white transition">
+                            Sedang
+                        </button>
+                        <button type="button" data-blast="2" class="blast-btn py-2 px-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-950 text-slate-400 hover:text-white transition">
+                            Tinggi
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 2: REKAYASA GEOTEKNIK & MITIGASI LONGSOR -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3 flex-1">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-helmet-safety text-emerald-400"></i>
+                        Upaya Mitigasi Geoteknik
+                    </h2>
+                    <span id="costIndicator" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-emerald-400">Biaya: $0</span>
+                </div>
+                <p class="text-[11px] text-slate-400">
+                    Aktifkan metode perkuatan lereng untuk meningkatkan Faktor Keamanan (FoS):
+                </p>
+
+                <!-- Mitigasi 1: Horizontal Drain -->
+                <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-sky-500/50 cursor-pointer transition">
+                    <input type="checkbox" id="mitDrainCheck" class="mt-1 w-4 h-4 accent-sky-500 rounded">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-200">Sistem Drainase (Horizontal Drain)</span>
+                            <span class="font-mono text-[10px] text-sky-400 font-bold">+$25k</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Menyalurkan air tanah keluar lereng sehingga menurunkan tekanan air pori secara signifikan.
+                        </p>
+                    </div>
+                </label>
+
+                <!-- Mitigasi 2: Rock Bolt -->
+                <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/50 cursor-pointer transition">
+                    <input type="checkbox" id="mitBoltCheck" class="mt-1 w-4 h-4 accent-amber-500 rounded">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-200">Pemasangan Rock Bolt / Angkur</span>
+                            <span class="font-mono text-[10px] text-amber-400 font-bold">+$45k</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Mengikat massa batuan lepas ke batuan dasar yang stabil, menambah gaya penahan geser.
+                        </p>
+                    </div>
+                </label>
+
+                <!-- Mitigasi 3: Terasering / Benching -->
+                <label class="flex items-start gap-3 p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition">
+                    <input type="checkbox" id="mitBenchCheck" class="mt-1 w-4 h-4 accent-emerald-500 rounded">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-200">Pelandaian Jenjang (Re-Benching)</span>
+                            <span class="font-mono text-[10px] text-emerald-400 font-bold">+$35k</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Memotong beban berlebih pada puncak lereng (<em>crest unloading</em>) untuk mengurangi gaya penggerak.
+                        </p>
+                    </div>
+                </label>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ==================== MODAL KUIS EVALUASI HOTS ==================== -->
+    <div id="quizModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 overflow-y-auto">
+        <div class="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden my-auto">
+            <div class="bg-gradient-to-r from-emerald-600/20 to-slate-900 border-b border-slate-800 p-5 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Evaluasi Kompetensi Geologi Teknik</span>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-white">Kuis Analisis Stabilitas Lereng (HOTS)</h2>
+                </div>
+                <button id="closeQuizBtn" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="quizContent" class="p-5 sm:p-6 space-y-5">
+                <!-- Soal akan dirender dinamis di sini -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIKA SIMULASI & AUDIO ==================== -->
+    <script>
+        /**
+         * ============================================================================
+         * 1. MESIN AUDIO PROSEDURAL (WEB AUDIO API) - TANPA FILE EKSTERNAL
+         * ============================================================================
+         */
+        class GeoSoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.initialized = false;
+                
+                // Node untuk suara hujan berkelanjutan
+                this.rainGain = null;
+                this.rainFilter = null;
+                
+                // Interval untuk musik ambient & sirine
+                this.bgmInterval = null;
+                this.sirenInterval = null;
+                this.isSirenPlaying = false;
+                this.bgmStep = 0;
+            }
+
+            init() {
+                if (this.initialized) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    this.setupRainGenerator();
+                    this.startAmbientMusic();
+                    this.initialized = true;
+                } catch (e) {
+                    console.warn("Web Audio API tidak didukung:", e);
+                }
+            }
+
+            setEnabled(state) {
+                this.enabled = state;
+                if (!this.ctx) return;
+                if (this.enabled && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+                if (!this.enabled) {
+                    if (this.rainGain) this.rainGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+                    this.stopSiren();
+                } else {
+                    // Pulihkan volume hujan sesuai slider
+                    const rainVal = parseInt(document.getElementById('rainfallSlider').value) / 100;
+                    this.updateRainVolume(rainVal);
+                }
+            }
+
+            // Generator Suara Hujan (Pink Noise terfilter)
+            setupRainGenerator() {
+                const bufferSize = this.ctx.sampleRate * 2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                    data[i] *= 0.05;
+                    b6 = white * 0.115926;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                noise.loop = true;
+
+                this.rainFilter = this.ctx.createBiquadFilter();
+                this.rainFilter.type = 'lowpass';
+                this.rainFilter.frequency.value = 800;
+
+                this.rainGain = this.ctx.createGain();
+                this.rainGain.gain.value = 0;
+
+                noise.connect(this.rainFilter);
+                this.rainFilter.connect(this.rainGain);
+                this.rainGain.connect(this.ctx.destination);
+                noise.start();
+            }
+
+            updateRainVolume(intensity0to1) {
+                if (!this.initialized || !this.rainGain) return;
+                if (!this.enabled) {
+                    this.rainGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+                    return;
+                }
+                const targetGain = intensity0to1 * 0.35;
+                const targetFreq = 400 + intensity0to1 * 1400;
+                this.rainGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.2);
+                this.rainFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.2);
+            }
+
+            // Musik Latar Ambient Instrumental Tenang
+            startAmbientMusic() {
+                // Skala Pentatonik Minor D (D3, F3, G3, A3, C4, D4, F4)
+                const notes = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66, 349.23];
+                const progression = [0, 3, 2, 4, 1, 3, 5, 2];
+
+                this.bgmInterval = setInterval(() => {
+                    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+                    
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    const noteIdx = progression[this.bgmStep % progression.length];
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[noteIdx], now);
+
+                    // Envelope lembut
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.025, now + 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 2.3);
+
+                    this.bgmStep++;
+                }, 2400);
+            }
+
+            // SFX 1: Klik UI / Slider
+            playClick(pitch = 600) {
+                if (!this.enabled || !this.initialized) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(pitch, now);
+                osc.frequency.exponentialRampToValueAtTime(pitch * 0.5, now + 0.05);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.06);
+            }
+
+            // SFX 2: Dentuman Peledakan (Blasting Boom)
+            playBlast() {
+                if (!this.enabled || !this.initialized) return;
+                const now = this.ctx.currentTime;
+                
+                // Sub-bass boom
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(110, now);
+                osc.frequency.exponentialRampToValueAtTime(28, now + 0.7);
+                
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(350, now);
+                filter.frequency.exponentialRampToValueAtTime(60, now + 0.7);
+
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.8);
+            }
+
+            // SFX 3: Retakan Batuan (Rock Cracking)
+            playCrack() {
+                if (!this.enabled || !this.initialized) return;
+                const now = this.ctx.currentTime;
+                for (let i = 0; i < 3; i++) {
+                    const t = now + i * 0.07;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(300 + Math.random() * 400, t);
+                    osc.frequency.exponentialRampToValueAtTime(80, t + 0.05);
+                    gain.gain.setValueAtTime(0.09, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.06);
+                }
+            }
+
+            // SFX 4: Sirine Peringatan Tambang
+            startSiren() {
+                if (!this.enabled || !this.initialized || this.isSirenPlaying) return;
+                this.isSirenPlaying = true;
+                const triggerBeep = () => {
+                    if (!this.enabled || !this.isSirenPlaying) return;
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.linearRampToValueAtTime(780, now + 0.25);
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.36);
+                };
+                triggerBeep();
+                this.sirenInterval = setInterval(triggerBeep, 1800);
+            }
+
+            stopSiren() {
+                this.isSirenPlaying = false;
+                if (this.sirenInterval) {
+                    clearInterval(this.sirenInterval);
+                    this.sirenInterval = null;
+                }
+            }
+
+            // SFX 5: Gemuruh Longsoran Besar (Landslide Rumble)
+            playLandslide() {
+                if (!this.enabled || !this.initialized) return;
+                const now = this.ctx.currentTime;
+                const duration = 2.4;
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.9));
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(220, now);
+                filter.frequency.linearRampToValueAtTime(65, now + duration);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.55, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start(now);
+            }
+
+            // SFX 6: Notifikasi Sukses (Chime)
+            playSuccess() {
+                if (!this.enabled || !this.initialized) return;
+                const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                freqs.forEach((f, idx) => {
+                    const t = this.ctx.currentTime + idx * 0.09;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, t);
+                    gain.gain.setValueAtTime(0.1, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.42);
+                });
+            }
+        }
+
+        const sound = new GeoSoundEngine();
+
+        /**
+         * ============================================================================
+         * 2. DATA GEOTEKNIK, STUDI KASUS, & BANK SOAL KUIS HOTS
+         * ============================================================================
+         */
+        const LITHOLOGIES = {
+            claystone: {
+                name: 'Batulempung Lapuk',
+                cohesion: 22,      // kPa
+                frictionAngle: 20, // derajat
+                unitWeight: 19.5,  // kN/m3
+                colorTop: '#786c5e',
+                colorMid: '#5c5247',
+                colorBot: '#3e3730'
+            },
+            sandstone: {
+                name: 'Batupasir Sedang',
+                cohesion: 48,      // kPa
+                frictionAngle: 31, // derajat
+                unitWeight: 22.0,  // kN/m3
+                colorTop: '#9c7c54',
+                colorMid: '#785e3e',
+                colorBot: '#524029'
+            },
+            andesite: {
+                name: 'Andesit Segar',
+                cohesion: 85,      // kPa
+                frictionAngle: 40, // derajat
+                unitWeight: 25.5,  // kN/m3
+                colorTop: '#64748b',
+                colorMid: '#475569',
+                colorBot: '#334155'
+            }
+        };
+
+        const CASE_STUDIES = [
+            {
+                id: 0,
+                title: "Kasus 1: Musim Hujan Ekstrem di Tambang Batubara",
+                desc: "Lereng tersusun atas Batulempung Lapuk dengan kemiringan 42°. Curah hujan meningkat hingga 85% menyebabkan tekanan air pori melonjak drastis. Stabilkan lereng hingga FoS ≥ 1.50!",
+                lithology: "claystone",
+                angle: 42,
+                rain: 85,
+                blast: 0,
+                targetFoS: 1.50
+            },
+            {
+                id: 1,
+                title: "Kasus 2: Efek Peledakan (Blasting) Dekat Lereng Curam",
+                desc: "Operasi penambangan di lapisan Batupasir memerlukan peledakan intensitas Tinggi pada lereng curam 58°. Terapkan kombinasi mitigasi agar lereng tidak runtuh (FoS ≥ 1.50)!",
+                lithology: "sandstone",
+                angle: 58,
+                rain: 35,
+                blast: 2,
+                targetFoS: 1.50
+            },
+            {
+                id: 2,
+                title: "Kasus 3: Optimalisasi Lereng Kritis Multi-Faktor",
+                desc: "Lereng Batulempung 50° mengalami hujan lebat (70%) sekaligus getaran peledakan Sedang. Gunakan strategi rekayasa geoteknik yang tepat untuk mencapai FoS ≥ 1.50.",
+                lithology: "claystone",
+                angle: 50,
+                rain: 70,
+                blast: 1,
+                targetFoS: 1.50
+            }
+        ];
+
+        const QUIZ_QUESTIONS = [
+            {
+                q: "1. Mengapa peningkatan curah hujan yang meresap ke dalam lereng tambang dapat memicu terjadinya longsor?",
+                options: [
+                    "Air hujan melarutkan seluruh mineral kuarsa sehingga batuan menghilang.",
+                    "Air meningkatkan tekanan air pori (pore water pressure) yang mengurangi tegangan efektif dan kuat geser batuan, sekaligus menambah beban massa lereng.",
+                    "Air hujan menurunkan sudut kemiringan lereng secara tiba-tiba.",
+                    "Air menyebabkan getaran seismik yang sama dengan peledakan."
+                ],
+                answer: 1,
+                explanation: "Menurut prinsip tegangan efektif Terzaghi (σ' = σ - u), kenaikan tekanan air pori (u) menurunkan tegangan efektif (σ'), sehingga kuat geser batuan berkurang drastis."
+            },
+            {
+                q: "2. Munculnya retakan tarik (tension crack) di bagian puncak jenjang tambang (crest) pada saat nilai FoS berada di rentang 1.0 – 1.3 menandakan bahwa...",
+                options: [
+                    "Lereng berada dalam kondisi sangat stabil dan siap dipercuram.",
+                    "Terjadi konsentrasi tegangan tarik melampaui kuat tarik batuan dan lereng mulai mengalami rayapan (creep) menuju keruntuhan.",
+                    "Sistem drainase horizontal telah bekerja 100% efektif.",
+                    "Kohesi batuan meningkat akibat pengeringan."
+                ],
+                answer: 1,
+                explanation: "Tension crack adalah indikator awal deformasi lereng kritis. Jika terisi air hujan, retakan ini memberikan gaya dorong hidrostatis tambahan yang mempercepat longsor."
+            },
+            {
+                q: "3. Apa fungsi utama pemasangan Horizontal Drain (lubang peniris mendatar) pada dinding jenjang tambang terbuka?",
+                options: [
+                    "Menambah berat jenis batuan pada kaki lereng (toe).",
+                    "Menurunkan elevasi muka air tanah (water table) di dalam lereng sehingga tekanan air pori berkurang.",
+                    "Mengikat bidang perlapisan batuan menggunakan batang baja.",
+                    "Meredam gelombang suara akibat peledakan."
+                ],
+                answer: 1,
+                explanation: "Horizontal drain mengalirkan air tanah keluar dari tubuh lereng, menurunkan muka air freatik dan mengurangi tekanan air pori."
+            },
+            {
+                q: "4. Dalam perhitungan Faktor Keamanan (FoS = Gaya Penahan / Gaya Penggerak), tindakan pelandaian jenjang dengan memotong beban di puncak lereng (crest unloading) bertujuan untuk...",
+                options: [
+                    "Memperkecil komponen Gaya Penggerak (driving force) akibat gravitasi.",
+                    "Memperbesar sudut geser dalam batulempung.",
+                    "Meningkatkan tekanan air pori di kaki lereng.",
+                    "Menghilangkan kebutuhan terhadap survei geologi."
+                ],
+                answer: 0,
+                explanation: "Mengurangi massa batuan di bagian atas lereng (crest) secara langsung menurunkan komponen gaya berat yang mendorong massa batuan meluncur ke bawah."
+            }
+        ];
+
+        /**
+         * ============================================================================
+         * 3. STATE SIMULASI & MODEL FISIKA GEOTEKNIK (LIMIT EQUILIBRIUM SIMPLIFIED)
+         * ============================================================================
+         */
+        const state = {
+            mode: 'free', // 'free' atau 'case'
+            currentCaseIdx: 0,
+            caseSolved: false,
+
+            // Parameter Input
+            lithology: 'sandstone',
+            slopeAngle: 45,     // derajat (20 - 75)
+            rainfall: 20,       // persen (0 - 100)
+            blasting: 0,        // 0: Rendah, 1: Sedang, 2: Tinggi
+
+            // Mitigasi
+            mitDrain: false,
+            mitBolt: false,
+            mitBench: false,
+
+            // Hasil Perhitungan Fisika
+            fos: 1.85,
+            resistingForce: 4250,
+            drivingForce: 2300,
+            waterTableRatio: 0.25,
+            status: 'SAFE',     // 'SAFE', 'WARNING', 'COLLAPSED'
+
+            // State Animasi Canvas
+            isCollapsed: false,
+            slideProgress: 0,   // 0 sampai 1 saat longsor terjadi
+            crackOpacity: 0,
+            screenShake: 0,
+            rainParticles: [],
+            debrisParticles: [],
+            dustParticles: [],
+            truckX: 0.18,
+            truckDir: 1,
+            boltAnimProgress: 0
+        };
+
+        /**
+         * Menghitung Kesetimbangan Batas (Limit Equilibrium - Metode Irisan/Bidang Sederhana)
+         */
+        function calculateGeotechnicalStability(triggerEvents = true) {
+            const lith = LITHOLOGIES[state.lithology];
+            const rad = (state.slopeAngle * Math.PI) / 180;
+            
+            // Tinggi lereng referensi (meter) - berkurang jika dilakukan Re-Benching / Crest Unloading
+            const H = state.mitBench ? 26 : 32; 
+            
+            // Berat massa gelincir (W) dalam kN per meter lebar
+            const areaWedge = 0.5 * H * H * (1 / Math.tan(rad * 0.65));
+            const saturationFactor = 1 + (state.rainfall / 100) * 0.18;
+            const W = areaWedge * lith.unitWeight * saturationFactor;
+
+            // Elevasi muka air tanah (0.15 dasar hingga 0.90 jenuh penuh)
+            let rawWaterRatio = 0.12 + (state.rainfall / 100) * 0.78;
+            if (state.mitDrain) {
+                rawWaterRatio *= 0.42; // Horizontal drain menurunkan muka air tanah 58%
+            }
+            state.waterTableRatio = Math.min(0.92, Math.max(0.1, rawWaterRatio));
+
+            // Tekanan Air Pori (U) pada bidang gelincir (kN)
+            const U = W * state.waterTableRatio * 0.52;
+
+            // Koefisien Seismik / Getaran Peledakan (kh)
+            const blastKh = [0.03, 0.14, 0.28][state.blasting];
+
+            // Panjang bidang gelincir (L)
+            const slipAngleRad = Math.max(0.28, rad * 0.68);
+            const L = H / Math.sin(slipAngleRad);
+
+            // 1. GAYA PENAHAN (Resisting Force = c*L + (W*cos(psi) - U)*tan(phi) + T_bolt)
+            const phiRad = (lith.frictionAngle * Math.PI) / 180;
+            const normalEffective = Math.max(0, W * Math.cos(slipAngleRad) - U);
+            const cohesionForce = lith.cohesion * L * 1.35;
+            const frictionForce = normalEffective * Math.tan(phiRad);
+            
+            // Tambahan gaya penahan dari Rock Bolt
+            const boltForce = state.mitBolt ? 1650 : 0;
+
+            const resisting = Math.round(cohesionForce + frictionForce + boltForce);
+
+            // 2. GAYA PENGGERAK (Driving Force = W*sin(psi) + kh*W*cos(psi) + F_water_crack)
+            const gravityDriving = W * Math.sin(slipAngleRad);
+            const seismicDriving = blastKh * W * Math.cos(slipAngleRad) * 1.45;
+            // Tekanan hidrostatis pada retakan tarik jika hujan tinggi
+            const crackWaterPush = (state.rainfall > 50 && !state.mitDrain) ? (state.rainfall - 50) * 14 : 0;
+
+            const driving = Math.round(gravityDriving + seismicDriving + crackWaterPush);
+
+            // Hitung FoS
+            const fos = Number((resisting / Math.max(100, driving)).toFixed(2));
+
+            const prevStatus = state.status;
+            state.resistingForce = resisting;
+            state.drivingForce = driving;
+            state.fos = fos;
+
+            // Tentukan Status Stabilitas
+            if (fos < 1.0) {
+                state.status = 'COLLAPSED';
+                if (triggerEvents && !state.isCollapsed) {
+                    triggerLandslide();
+                }
+            } else if (fos <= 1.5) {
+                state.status = 'WARNING';
+                if (triggerEvents && prevStatus === 'SAFE') {
+                    sound.playCrack();
+                }
+                sound.startSiren();
+            } else {
+                state.status = 'SAFE';
+                sound.stopSiren();
+            }
+
+            // Cek penyelesaian misi Studi Kasus
+            if (state.mode === 'case' && !state.isCollapsed && fos >= CASE_STUDIES[state.currentCaseIdx].targetFoS) {
+                if (!state.caseSolved) {
+                    state.caseSolved = true;
+                    sound.playSuccess();
+                }
+            } else {
+                state.caseSolved = false;
+            }
+
+            updateUI();
+        }
+
+        function triggerLandslide() {
+            state.isCollapsed = true;
+            state.slideProgress = 0;
+            state.screenShake = 18;
+            sound.stopSiren();
+            sound.playLandslide();
+
+            // Buat partikel batu & debu
+            state.debrisParticles = [];
+            state.dustParticles = [];
+            for (let i = 0; i < 45; i++) {
+                state.debrisParticles.push({
+                    rx: 0.35 + Math.random() * 0.25,
+                    ry: 0.25 + Math.random() * 0.45,
+                    vx: 1.5 + Math.random() * 4,
+                    vy: 1 + Math.random() * 3,
+                    size: 4 + Math.random() * 9,
+                    rot: Math.random() * Math.PI * 2,
+                    vrot: (Math.random() - 0.5) * 0.2
+                });
+            }
+            for (let i = 0; i < 35; i++) {
+                state.dustParticles.push({
+                    rx: 0.4 + Math.random() * 0.35,
+                    ry: 0.55 + Math.random() * 0.3,
+                    vx: (Math.random() - 0.3) * 1.8,
+                    vy: -0.5 - Math.random() * 1.5,
+                    radius: 15 + Math.random() * 30,
+                    alpha: 0.65
+                });
+            }
+
+            setTimeout(() => {
+                if (state.isCollapsed) {
+                    document.getElementById('collapseOverlay').classList.remove('hidden');
+                }
+            }, 1400);
+        }
+
+        function recoverSlope() {
+            state.isCollapsed = false;
+            state.slideProgress = 0;
+            state.debrisParticles = [];
+            state.dustParticles = [];
+            document.getElementById('collapseOverlay').classList.add('hidden');
+            
+            // Jika masih < 1.0, turunkan sudut otomatis sedikit agar tidak langsung runtuh ulang
+            if (state.fos < 1.0) {
+                state.slopeAngle = Math.max(25, state.slopeAngle - 12);
+                document.getElementById('slopeAngleSlider').value = state.slopeAngle;
+            }
+            calculateGeotechnicalStability(false);
+            sound.playClick(750);
+        }
+
+        /**
+         * ============================================================================
+         * 4. PEMBARUAN ANTARMUKA PENGGUNA (DOM UI UPDATES)
+         * ============================================================================
+         */
+        function updateUI() {
+            // Update label parameter
+            const lith = LITHOLOGIES[state.lithology];
+            document.getElementById('lithologyProps').innerHTML = 
+                `<span>Kohesi (c): ${lith.cohesion} kPa</span><span>Sudut Geser (φ): ${lith.frictionAngle}°</span>`;
+            
+            document.getElementById('slopeAngleVal').textContent = `${state.slopeAngle}°`;
+            document.getElementById('rainfallVal').textContent = `${state.rainfall}%`;
+            
+            const blastLabels = ['Rendah (0.03g)', 'Sedang (0.14g)', 'Tinggi (0.28g)'];
+            document.getElementById('blastingVal').textContent = blastLabels[state.blasting];
+
+            // Biaya Mitigasi
+            let cost = 0;
+            if (state.mitDrain) cost += 25;
+            if (state.mitBolt) cost += 45;
+            if (state.mitBench) cost += 35;
+            document.getElementById('costIndicator').textContent = `Biaya: $${cost}k`;
+
+            // Update Nilai FoS & Gauge
+            const fosEl = document.getElementById('fosValueDisplay');
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+            const probEl = document.getElementById('failureProbDisplay');
+
+            fosEl.textContent = state.fos.toFixed(2);
+            const markerPct = Math.min(98, Math.max(2, (state.fos / 3.0) * 100));
+            document.getElementById('fosMarker').style.left = `${markerPct}%`;
+
+            // Reset classes
+            statusBadge.classList.remove('siren-active');
+
+            if (state.fos > 1.5) {
+                fosEl.className = 'font-mono text-3xl font-extrabold text-emerald-400';
+                statusBadge.className = 'px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-extrabold text-xs sm:text-sm flex items-center gap-2';
+                statusText.textContent = 'AMAN (STABIL)';
+                probEl.textContent = '< 5% (Sangat Rendah)';
+                probEl.className = 'font-mono text-sm font-bold text-emerald-400';
+            } else if (state.fos >= 1.0) {
+                fosEl.className = 'font-mono text-3xl font-extrabold text-amber-400';
+                statusBadge.className = 'px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-400 font-extrabold text-xs sm:text-sm flex items-center gap-2 siren-active';
+                statusText.textContent = 'WASPADA (KRITIS)';
+                probEl.textContent = '35% - 65% (Rayapan)';
+                probEl.className = 'font-mono text-sm font-bold text-amber-400';
+            } else {
+                fosEl.className = 'font-mono text-3xl font-extrabold text-rose-500';
+                statusBadge.className = 'px-3 py-1 rounded-lg bg-rose-500/20 border border-rose-500/60 text-rose-400 font-extrabold text-xs sm:text-sm flex items-center gap-2 siren-active';
+                statusText.textContent = 'LONGSOR (RUNTUH)';
+                probEl.textContent = '> 95% (Kegagalan Lereng)';
+                probEl.className = 'font-mono text-sm font-bold text-rose-400';
+            }
+
+            // Update Bar Gaya Penahan vs Penggerak
+            document.getElementById('resistingForceText').textContent = `${state.resistingForce.toLocaleString('id-ID')} kN`;
+            document.getElementById('drivingForceText').textContent = `${state.drivingForce.toLocaleString('id-ID')} kN`;
+
+            const maxForce = Math.max(state.resistingForce, state.drivingForce, 6000);
+            document.getElementById('resistingBar').style.width = `${Math.min(100, (state.resistingForce / maxForce) * 100)}%`;
+            document.getElementById('drivingBar').style.width = `${Math.min(100, (state.drivingForce / maxForce) * 100)}%`;
+
+            // Update 4 Tahap Proses Geologi
+            updateGeologyLog();
+
+            // Update Tombol Kuis pada Mode Studi Kasus
+            const quizBtn = document.getElementById('openQuizBtn');
+            const lockIcon = document.getElementById('quizLockIcon');
+            if (state.caseSolved) {
+                quizBtn.disabled = false;
+                quizBtn.className = 'px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition shadow-lg shadow-emerald-500/30 cursor-pointer';
+                lockIcon.className = 'fa-solid fa-unlock';
+            } else {
+                quizBtn.disabled = true;
+                quizBtn.className = 'px-4 py-2 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs flex items-center gap-2 transition cursor-not-allowed';
+                lockIcon.className = 'fa-solid fa-lock';
+            }
+        }
+
+        function updateGeologyLog() {
+            // Tahap 1: Tekanan Air Pori
+            const s1Badge = document.getElementById('stage1Badge');
+            const s1Desc = document.getElementById('stage1Desc');
+            const s1Card = document.getElementById('stage1Card');
+            if (state.waterTableRatio > 0.55) {
+                s1Badge.textContent = 'Tinggi (Jenuh)';
+                s1Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300';
+                s1Desc.textContent = 'Muka air tanah naik mendekati permukaan lereng. Tekanan air pori (u) menurunkan tegangan efektif antar butir.';
+                s1Card.className = 'p-2.5 rounded-xl border border-sky-500/50 bg-sky-950/30 transition';
+            } else {
+                s1Badge.textContent = state.mitDrain ? 'Terkendali (Drain)' : 'Normal';
+                s1Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400';
+                s1Desc.textContent = state.mitDrain 
+                    ? 'Lubang peniris horizontal berhasil mengalirkan air keluar lereng dan menurunkan tekanan air pori.'
+                    : 'Muka air tanah rendah; tegangan efektif antar butir batuan masih terjaga optimal.';
+                s1Card.className = 'p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition';
+            }
+
+            // Tahap 2: Retakan Tarik (Tension Crack)
+            const s2Badge = document.getElementById('stage2Badge');
+            const s2Desc = document.getElementById('stage2Desc');
+            const s2Card = document.getElementById('stage2Card');
+            if (state.fos <= 1.45) {
+                s2Badge.textContent = 'Terbentuk!';
+                s2Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold';
+                s2Desc.textContent = 'Retakan tarik vertikal terbuka di mahkota lereng (crest). Air hujan yang masuk ke celah ini memperbesar gaya dorong.';
+                s2Card.className = 'p-2.5 rounded-xl border border-amber-500/50 bg-amber-950/30 transition';
+            } else {
+                s2Badge.textContent = 'Tidak Ada';
+                s2Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400';
+                s2Desc.textContent = 'Tegangan tarik di puncak lereng (crest) masih di bawah kuat tarik massa batuan.';
+                s2Card.className = 'p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition';
+            }
+
+            // Tahap 3: Degradasi Kuat Geser
+            const s3Badge = document.getElementById('stage3Badge');
+            const s3Desc = document.getElementById('stage3Desc');
+            const s3Card = document.getElementById('stage3Card');
+            if (state.fos <= 1.25) {
+                s3Badge.textContent = 'Rayapan Aktif';
+                s3Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 font-bold';
+                s3Desc.textContent = 'Deformasi plastis terjadi di sepanjang zona bidang gelincir. Kuat geser puncak (peak strength) mulai terlampaui.';
+                s3Card.className = 'p-2.5 rounded-xl border border-orange-500/50 bg-orange-950/30 transition';
+            } else {
+                s3Badge.textContent = 'Stabil';
+                s3Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400';
+                s3Desc.textContent = 'Kohesi (c) dan sudut geser dalam (φ) mampu menahan komponen berat massa lereng.';
+                s3Card.className = 'p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition';
+            }
+
+            // Tahap 4: Keruntuhan Massa
+            const s4Badge = document.getElementById('stage4Badge');
+            const s4Desc = document.getElementById('stage4Desc');
+            const s4Card = document.getElementById('stage4Card');
+            if (state.fos < 1.0) {
+                s4Badge.textContent = 'LONGSOR!';
+                s4Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/30 text-rose-300 font-bold';
+                s4Desc.textContent = 'Gaya Penggerak > Gaya Penahan! Terjadi keruntuhan geser (shear failure) dan massa batuan meluncur ke pit floor.';
+                s4Card.className = 'p-2.5 rounded-xl border border-rose-500/60 bg-rose-950/40 transition';
+            } else {
+                s4Badge.textContent = 'Terkendali';
+                s4Badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400';
+                s4Desc.textContent = 'Kesetimbangan lereng terjaga; operasional penambangan di bawah jenjang dapat berlangsung aman.';
+                s4Card.className = 'p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 transition';
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 5. RENDERING ENGINE HTML5 CANVAS 2D (DINAMIS & RESPONSIF)
+         * ============================================================================
+         */
+        const canvas = document.getElementById('slopeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Inisialisasi Partikel Hujan
+        function initRainParticles() {
+            state.rainParticles = [];
+            for (let i = 0; i < 140; i++) {
+                state.rainParticles.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    speed: 0.015 + Math.random() * 0.02,
+                    len: 10 + Math.random() * 12
+                });
+            }
+        }
+
+        function drawSimulation(time) {
+            const container = document.getElementById('canvasContainer');
+            const W = container.clientWidth;
+            const H = container.clientHeight;
+
+            ctx.save();
+
+            // Efek Getaran Kamera (Screen Shake saat Peledakan atau Longsor)
+            if (state.screenShake > 0.1) {
+                const dx = (Math.random() - 0.5) * state.screenShake;
+                const dy = (Math.random() - 0.5) * state.screenShake;
+                ctx.translate(dx, dy);
+                state.screenShake *= 0.92;
+            }
+
+            // 1. LATAR BELAKANG LANGIT (Berubah mendung saat hujan naik)
+            const rainFactor = state.rainfall / 100;
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, rainFactor > 0.5 ? '#0f172a' : '#0c192c');
+            skyGrad.addColorStop(1, rainFactor > 0.5 ? '#1e293b' : '#1e3a5f');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Awan Mendung jika curah hujan > 15%
+            if (state.rainfall > 15) {
+                ctx.fillStyle = `rgba(30, 41, 59, ${0.3 + rainFactor * 0.6})`;
+                for (let c = 0; c < 5; c++) {
+                    const cx = ((c * 0.25 + time * 0.00002) % 1.2 - 0.1) * W;
+                    ctx.beginPath();
+                    ctx.arc(cx, H * 0.08, 45, 0, Math.PI * 2);
+                    ctx.arc(cx + 35, H * 0.07, 55, 0, Math.PI * 2);
+                    ctx.arc(cx + 75, H * 0.09, 40, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 2. GEOMETRI LERENG TAMBANG TERBUKA (OPEN PIT BENCHING)
+            const lith = LITHOLOGIES[state.lithology];
+            const pitFloorY = H * 0.84;
+            const crestY = state.mitBench ? H * 0.28 : H * 0.22; // Pelandaian jenjang menurunkan puncak
+            const crestX = W * 0.34;
+            
+            // Hitung posisi kaki lereng (toeX) berdasarkan sudut lereng (20° - 75°)
+            const slopeHeightPx = pitFloorY - crestY;
+            const rad = (state.slopeAngle * Math.PI) / 180;
+            const runPx = Math.min(W * 0.48, Math.max(W * 0.12, slopeHeightPx / Math.tan(rad)));
+            const toeX = crestX + runPx;
+
+            // Gambar Batuan Dasar Utama (Stasioner / Tidak Bergerak)
+            ctx.beginPath();
+            ctx.moveTo(0, crestY);
+            ctx.lineTo(crestX, crestY);
+            
+            // Buat 3 Jenjang Tambang (Benches)
+            const benches = 3;
+            for (let b = 0; b < benches; b++) {
+                const t1 = b / benches;
+                const t2 = (b + 1) / benches;
+                const bx1 = crestX + runPx * t1;
+                const by1 = crestY + slopeHeightPx * t1;
+                const bx2 = crestX + runPx * t2;
+                const by2 = crestY + slopeHeightPx * t2;
+                const bermWidth = (bx2 - bx1) * 0.28;
+                
+                ctx.lineTo(bx1 + bermWidth, by1);
+                ctx.lineTo(bx2, by2);
+            }
+            ctx.lineTo(W, pitFloorY);
+            ctx.lineTo(W, H);
+            ctx.lineTo(0, H);
+            ctx.closePath();
+
+            const rockGrad = ctx.createLinearGradient(0, crestY, 0, H);
+            rockGrad.addColorStop(0, lith.colorTop);
+            rockGrad.addColorStop(0.5, lith.colorMid);
+            rockGrad.addColorStop(1, lith.colorBot);
+            ctx.fillStyle = rockGrad;
+            ctx.fill();
+
+            // Garis Perlapisan Geologi (Bedding Planes) Miring ke Arah Pit
+            ctx.save();
+            ctx.clip(); // Potong sesuai bentuk lereng
+            ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
+            ctx.lineWidth = 2;
+            for (let layer = -4; layer < 12; layer++) {
+                const ly = crestY + layer * 32;
+                ctx.beginPath();
+                ctx.moveTo(0, ly - 30);
+                ctx.lineTo(W, ly + 85);
+                ctx.stroke();
+            }
+
+            // 3. MUKA AIR TANAH (WATER TABLE / PHREATIC LINE)
+            const wtTopY = pitFloorY - (pitFloorY - crestY) * state.waterTableRatio;
+            ctx.beginPath();
+            ctx.moveTo(0, wtTopY);
+            ctx.quadraticCurveTo(crestX * 0.9, wtTopY + 10, toeX, pitFloorY);
+            ctx.lineTo(W, pitFloorY);
+            ctx.lineTo(W, H);
+            ctx.lineTo(0, H);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(14, 165, 233, 0.24)';
+            ctx.fill();
+
+            // Garis Putus-putus Permukaan Air Tanah
+            ctx.beginPath();
+            ctx.moveTo(0, wtTopY);
+            ctx.quadraticCurveTo(crestX * 0.9, wtTopY + 10, toeX, pitFloorY);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+
+            // 4. BIDANG GELINCIR POTENSIAL (SLIP SURFACE) & MASSA LONGSOR
+            const crackX = crestX - runPx * 0.22;
+            const crackDepth = (pitFloorY - crestY) * 0.25;
+
+            // Update progres animasi longsor jika runtuh
+            if (state.isCollapsed && state.slideProgress < 1) {
+                state.slideProgress = Math.min(1, state.slideProgress + 0.018);
+            }
+
+            const slideOffsetX = state.isCollapsed ? state.slideProgress * (runPx * 0.65) : 0;
+            const slideOffsetY = state.isCollapsed ? state.slideProgress * (slopeHeightPx * 0.35) : 0;
+
+            // Gambar Bidang Gelincir (Garis Merah Putus-putus)
+            ctx.beginPath();
+            ctx.moveTo(crackX, crestY + crackDepth);
+            ctx.quadraticCurveTo(crestX + runPx * 0.2, pitFloorY - 10, toeX, pitFloorY);
+            ctx.strokeStyle = state.fos < 1.5 ? '#f43f5e' : 'rgba(244, 63, 94, 0.45)';
+            ctx.lineWidth = state.fos < 1.5 ? 3 : 1.5;
+            ctx.setLineDash([8, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Jika Longsor Terjadi: Gambar Massa Batuan yang Meluncur Menimbun Pit Floor
+            if (state.isCollapsed) {
+                ctx.save();
+                ctx.translate(slideOffsetX, slideOffsetY);
+                ctx.beginPath();
+                ctx.moveTo(crackX, crestY);
+                ctx.lineTo(crestX, crestY);
+                ctx.lineTo(toeX, pitFloorY);
+                ctx.quadraticCurveTo(crestX + runPx * 0.2, pitFloorY - 10, crackX, crestY + crackDepth);
+                ctx.closePath();
+                ctx.fillStyle = lith.colorTop;
+                ctx.fill();
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 5. RETAKAN TARIK (TENSION CRACK) SAAT FoS <= 1.45
+            if (state.fos <= 1.45 && !state.isCollapsed) {
+                const crackWidth = Math.min(8, (1.5 - state.fos) * 14);
+                ctx.beginPath();
+                ctx.moveTo(crackX - crackWidth / 2, crestY);
+                ctx.lineTo(crackX, crestY + crackDepth);
+                ctx.lineTo(crackX + crackWidth / 2, crestY);
+                ctx.closePath();
+                ctx.fillStyle = state.rainfall > 40 ? '#0284c7' : '#090d16'; // Terisi air jika hujan
+                ctx.fill();
+
+                // Label Tension Crack
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.fillText('⚠ Retakan Tarik', crackX - 42, crestY - 10);
+            }
+
+            // 6. VISUALISASI MITIGASI GEOTEKNIK DI CANVAS
+            // A. Horizontal Drain (Pipa Peniris Air)
+            if (state.mitDrain) {
+                for (let d = 1; d <= 2; d++) {
+                    const dy = crestY + slopeHeightPx * (d * 0.35);
+                    const dx = crestX + runPx * (d * 0.35);
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(dx - 55, dy - 6);
+                    ctx.lineTo(dx + 12, dy + 2);
+                    ctx.stroke();
+
+                    // Tetesan air keluar dari pipa
+                    if (state.rainfall > 10) {
+                        ctx.fillStyle = '#7dd3fc';
+                        const dropY = dy + 4 + ((time * 0.08 + d * 15) % 22);
+                        ctx.beginPath();
+                        ctx.arc(dx + 14, dropY, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // B. Rock Bolt / Angkur Batuan
+            if (state.mitBolt) {
+                for (let b = 0; b < 3; b++) {
+                    const frac = 0.22 + b * 0.25;
+                    const bx = crestX + runPx * frac;
+                    const by = crestY + slopeHeightPx * frac;
+                    
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(bx + 4, by - 2);
+                    ctx.lineTo(bx - 65, by + 28);
+                    ctx.stroke();
+
+                    // Pelat kepala baut (Faceplate)
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(bx, by - 6, 7, 10);
+                }
+            }
+
+            // 7. OBJEK SKALA & AKTIVITAS TAMBANG (DUMP TRUCK & EXCAVATOR)
+            if (!state.isCollapsed) {
+                state.truckX += state.truckDir * 0.0004;
+                if (state.truckX > 0.24) state.truckDir = -1;
+                if (state.truckX < 0.06) state.truckDir = 1;
+            }
+            drawDumpTruck(W * state.truckX, crestY, state.truckDir);
+            drawDumpTruck(Math.min(W - 60, toeX + 45), pitFloorY, -1);
+
+            // 8. PARTIKEL HUJAN
+            if (state.rainfall > 0) {
+                const activeDrops = Math.floor((state.rainfall / 100) * state.rainParticles.length);
+                ctx.strokeStyle = 'rgba(186, 230, 253, 0.55)';
+                ctx.lineWidth = 1.3;
+                ctx.beginPath();
+                for (let i = 0; i < activeDrops; i++) {
+                    const p = state.rainParticles[i];
+                    p.y += p.speed;
+                    p.x -= p.speed * 0.15;
+                    if (p.y > 1) { p.y = 0; p.x = Math.random(); }
+                    if (p.x < 0) p.x = 1;
+                    
+                    const rx = p.x * W;
+                    const ry = p.y * H;
+                    ctx.moveTo(rx, ry);
+                    ctx.lineTo(rx - 3, ry + p.len);
+                }
+                ctx.stroke();
+            }
+
+            // 9. PARTIKEL BATU & DEBU SAAT LONGSOR
+            if (state.isCollapsed) {
+                state.debrisParticles.forEach(dp => {
+                    dp.rx += dp.vx / W;
+                    dp.ry += dp.vy / H;
+                    dp.vy += 0.12;
+                    if (dp.ry * H > pitFloorY - 4) {
+                        dp.ry = (pitFloorY - 4) / H;
+                        dp.vx *= 0.85;
+                        dp.vy = 0;
+                    }
+                    ctx.save();
+                    ctx.translate(dp.rx * W, dp.ry * H);
+                    ctx.rotate(dp.rot);
+                    ctx.fillStyle = lith.colorMid;
+                    ctx.fillRect(-dp.size / 2, -dp.size / 2, dp.size, dp.size * 0.7);
+                    ctx.restore();
+                });
+
+                state.dustParticles.forEach(dust => {
+                    dust.rx += dust.vx / W;
+                    dust.ry += dust.vy / H;
+                    dust.alpha *= 0.985;
+                    if (dust.alpha > 0.02) {
+                        ctx.fillStyle = `rgba(203, 213, 225, ${dust.alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(dust.rx * W, dust.ry * H, dust.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+            }
+
+            // Label Anotasi Geoteknik di Canvas
+            ctx.fillStyle = 'rgba(248, 250, 252, 0.85)';
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.fillText(`Sudut Lereng: ${state.slopeAngle}°`, crestX + 12, crestY + 18);
+            ctx.fillText('Lantai Tambang (Pit Floor)', Math.min(W - 145, toeX + 18), pitFloorY - 10);
+
+            ctx.restore();
+            requestAnimationFrame(drawSimulation);
+        }
+
+        // Menggambar Ikon Dump Truck Tambang sebagai Pembanding Skala
+        function drawDumpTruck(x, groundY, dir) {
+            ctx.save();
+            ctx.translate(x, groundY);
+            if (dir < 0) ctx.scale(-1, 1);
+
+            // Bak Truk (Dump Body)
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(-16, -8);
+            ctx.lineTo(4, -8);
+            ctx.lineTo(6, -16);
+            ctx.lineTo(-18, -16);
+            ctx.closePath();
+            ctx.fill();
+
+            // Kabin
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(4, -14, 8, 6);
+
+            // Roda Besar
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-10, -4, 4, 0, Math.PI * 2);
+            ctx.arc(7, -4, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        /**
+         * ============================================================================
+         * 6. LOGIKA STUDI KASUS & KUIS EVALUASI HOTS
+         * ============================================================================
+         */
+        function loadCaseStudy(index) {
+            state.currentCaseIdx = index;
+            state.caseSolved = false;
+            state.isCollapsed = false;
+            document.getElementById('collapseOverlay').classList.add('hidden');
+
+            const cs = CASE_STUDIES[index];
+            document.getElementById('caseDescription').textContent = cs.desc;
+            document.getElementById('caseTargetBadge').textContent = `FoS ≥ ${cs.targetFoS.toFixed(2)} (AMAN)`;
+
+            // Terapkan parameter kasus
+            state.lithology = cs.lithology;
+            state.slopeAngle = cs.angle;
+            state.rainfall = cs.rain;
+            state.blasting = cs.blast;
+            state.mitDrain = false;
+            state.mitBolt = false;
+            state.mitBench = false;
+
+            // Sinkronkan kontrol UI
+            document.getElementById('lithologySelect').value = state.lithology;
+            document.getElementById('slopeAngleSlider').value = state.slopeAngle;
+            document.getElementById('rainfallSlider').value = state.rainfall;
+            document.getElementById('mitDrainCheck').checked = false;
+            document.getElementById('mitBoltCheck').checked = false;
+            document.getElementById('mitBenchCheck').checked = false;
+
+            updateBlastButtons();
+            sound.updateRainVolume(state.rainfall / 100);
+            calculateGeotechnicalStability(false);
+        }
+
+        function renderQuizModal() {
+            const container = document.getElementById('quizContent');
+            let html = '';
+
+            QUIZ_QUESTIONS.forEach((item, idx) => {
+                html += `
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2.5" id="qBlock_${idx}">
+                        <p class="text-xs sm:text-sm font-bold text-slate-100">${item.q}</p>
+                        <div class="space-y-1.5">
+                            ${item.options.map((opt, optIdx) => `
+                                <label class="flex items-start gap-2.5 p-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-800 cursor-pointer text-xs text-slate-300 transition">
+                                    <input type="radio" name="quiz_q_${idx}" value="${optIdx}" class="mt-0.5 accent-amber-500">
+                                    <span>${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <div id="qFeedback_${idx}" class="hidden text-xs p-2.5 rounded-lg mt-2"></div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-800">
+                    <div id="quizScoreSummary" class="text-sm font-bold text-amber-400"></div>
+                    <button id="submitQuizBtn" class="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs rounded-xl transition">
+                        Periksa Jawaban Evaluasi
+                    </button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            document.getElementById('submitQuizBtn').addEventListener('click', () => {
+                let score = 0;
+                QUIZ_QUESTIONS.forEach((item, idx) => {
+                    const selected = document.querySelector(`input[name="quiz_q_${idx}"]:checked`);
+                    const fb = document.getElementById(`qFeedback_${idx}`);
+                    fb.classList.remove('hidden');
+
+                    if (selected && parseInt(selected.value) === item.answer) {
+                        score++;
+                        fb.className = 'text-xs p-2.5 rounded-lg mt-2 bg-emerald-950/70 border border-emerald-500/40 text-emerald-300';
+                        fb.innerHTML = `<strong><i class="fa-solid fa-check-circle mr-1"></i>Benar!</strong> ${item.explanation}`;
+                    } else {
+                        fb.className = 'text-xs p-2.5 rounded-lg mt-2 bg-rose-950/70 border border-rose-500/40 text-rose-300';
+                        fb.innerHTML = `<strong><i class="fa-solid fa-circle-xmark mr-1"></i>Kurang Tepat.</strong> ${item.explanation}`;
+                    }
+                });
+
+                const pct = Math.round((score / QUIZ_QUESTIONS.length) * 100);
+                document.getElementById('quizScoreSummary').textContent = `Skor Evaluasi: ${score}/${QUIZ_QUESTIONS.length} (${pct}%)`;
+                if (score >= 3) sound.playSuccess();
+                else sound.playClick(400);
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 7. EVENT LISTENERS & INISIALISASI APLIKASI
+         * ============================================================================
+         */
+        function updateBlastButtons() {
+            document.querySelectorAll('.blast-btn').forEach(btn => {
+                const val = parseInt(btn.dataset.blast);
+                if (val === state.blasting) {
+                    btn.className = 'blast-btn py-2 px-2 rounded-xl text-xs font-bold border border-amber-500 bg-amber-500/20 text-amber-300 transition';
+                } else {
+                    btn.className = 'blast-btn py-2 px-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-950 text-slate-400 hover:text-white transition';
+                }
+            });
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            initRainParticles();
+            calculateGeotechnicalStability(false);
+            requestAnimationFrame(drawSimulation);
+
+            // Tombol Mulai dari Layar Awal
+            document.getElementById('startSimBtn').addEventListener('click', () => {
+                const audioWanted = document.getElementById('introAudioCheck').checked;
+                sound.init();
+                sound.setEnabled(audioWanted);
+                updateAudioButtonUI(audioWanted);
+                sound.playClick(700);
+                document.getElementById('introModal').classList.add('hidden');
+            });
+
+            // Toggle Audio Navbar
+            const audioBtn = document.getElementById('audioToggleBtn');
+            function updateAudioButtonUI(isOn) {
+                const icon = document.getElementById('audioIcon');
+                const span = audioBtn.querySelector('span');
+                if (isOn) {
+                    icon.className = 'fa-solid fa-volume-high';
+                    audioBtn.classList.replace('text-slate-400', 'text-amber-400');
+                    if (span) span.textContent = 'Audio ON';
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark';
+                    audioBtn.classList.replace('text-amber-400', 'text-slate-400');
+                    if (span) span.textContent = 'Audio OFF';
+                }
+            }
+
+            audioBtn.addEventListener('click', () => {
+                if (!sound.initialized) sound.init();
+                sound.setEnabled(!sound.enabled);
+                updateAudioButtonUI(sound.enabled);
+            });
+
+            // Mode Switcher (Eksplorasi Bebas vs Studi Kasus)
+            const modeFreeBtn = document.getElementById('modeFreeBtn');
+            const modeCaseBtn = document.getElementById('modeCaseBtn');
+            const caseBanner = document.getElementById('caseStudyBanner');
+
+            modeFreeBtn.addEventListener('click', () => {
+                state.mode = 'free';
+                modeFreeBtn.className = 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition';
+                modeCaseBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+                caseBanner.classList.add('hidden');
+                sound.playClick(600);
+                resizeCanvas();
+            });
+
+            modeCaseBtn.addEventListener('click', () => {
+                state.mode = 'case';
+                modeCaseBtn.className = 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition';
+                modeFreeBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+                caseBanner.classList.remove('hidden');
+                sound.playClick(650);
+                loadCaseStudy(parseInt(document.getElementById('caseSelector').value));
+                resizeCanvas();
+            });
+
+            document.getElementById('caseSelector').addEventListener('change', (e) => {
+                loadCaseStudy(parseInt(e.target.value));
+            });
+
+            // Kontrol Parameter Geologi
+            document.getElementById('lithologySelect').addEventListener('change', (e) => {
+                state.lithology = e.target.value;
+                sound.playClick(550);
+                calculateGeotechnicalStability(true);
+            });
+
+            document.getElementById('slopeAngleSlider').addEventListener('input', (e) => {
+                state.slopeAngle = parseInt(e.target.value);
+                calculateGeotechnicalStability(true);
+            });
+
+            document.getElementById('rainfallSlider').addEventListener('input', (e) => {
+                state.rainfall = parseInt(e.target.value);
+                sound.updateRainVolume(state.rainfall / 100);
+                calculateGeotechnicalStability(true);
+            });
+
+            document.querySelectorAll('.blast-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const newVal = parseInt(btn.dataset.blast);
+                    if (newVal > state.blasting || newVal > 0) {
+                        sound.playBlast();
+                        state.screenShake = newVal === 2 ? 12 : 6;
+                    } else {
+                        sound.playClick(500);
+                    }
+                    state.blasting = newVal;
+                    updateBlastButtons();
+                    calculateGeotechnicalStability(true);
+                });
+            });
+
+            // Kontrol Mitigasi Geoteknik
+            document.getElementById('mitDrainCheck').addEventListener('change', (e) => {
+                state.mitDrain = e.target.checked;
+                sound.playClick(e.target.checked ? 720 : 480);
+                calculateGeotechnicalStability(true);
+            });
+
+            document.getElementById('mitBoltCheck').addEventListener('change', (e) => {
+                state.mitBolt = e.target.checked;
+                sound.playClick(e.target.checked ? 760 : 480);
+                calculateGeotechnicalStability(true);
+            });
+
+            document.getElementById('mitBenchCheck').addEventListener('change', (e) => {
+                state.mitBench = e.target.checked;
+                sound.playClick(e.target.checked ? 800 : 480);
+                calculateGeotechnicalStability(true);
+            });
+
+            // Tombol Reset & Pulihkan Lereng
+            document.getElementById('recoverSlopeBtn').addEventListener('click', recoverSlope);
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                if (state.mode === 'case') {
+                    loadCaseStudy(state.currentCaseIdx);
+                } else {
+                    state.isCollapsed = false;
+                    state.slideProgress = 0;
+                    state.lithology = 'sandstone';
+                    state.slopeAngle = 45;
+                    state.rainfall = 20;
+                    state.blasting = 0;
+                    state.mitDrain = false;
+                    state.mitBolt = false;
+                    state.mitBench = false;
+
+                    document.getElementById('collapseOverlay').classList.add('hidden');
+                    document.getElementById('lithologySelect').value = 'sandstone';
+                    document.getElementById('slopeAngleSlider').value = 45;
+                    document.getElementById('rainfallSlider').value = 20;
+                    document.getElementById('mitDrainCheck').checked = false;
+                    document.getElementById('mitBoltCheck').checked = false;
+                    document.getElementById('mitBenchCheck').checked = false;
+
+                    updateBlastButtons();
+                    sound.updateRainVolume(0.2);
+                    calculateGeotechnicalStability(false);
+                }
+                sound.playClick(650);
+            });
+
+            // Modal Kuis Evaluasi
+            document.getElementById('openQuizBtn').addEventListener('click', () => {
+                if (!state.caseSolved) return;
+                renderQuizModal();
+                document.getElementById('quizModal').classList.remove('hidden');
+                sound.playClick(750);
+            });
+
+            document.getElementById('closeQuizBtn').addEventListener('click', () => {
+                document.getElementById('quizModal').classList.add('hidden');
+            });
+        };
+    </script>
+</body>
+</html>
